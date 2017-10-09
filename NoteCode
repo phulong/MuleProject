@@ -1,0 +1,620 @@
+getparam : #[message.inboundProperties.'http.query.params'.get('hub.verify_token')]
+setvalue:   ##[message.outboundProperties.
+
+#[message.inboundProperties]  : lay du lieu tat ca inboundProperties;
+
+
+ <foreach collection="#[message.payload]" doc:name="For Each">
+          <logger level="INFO" message="Sender id :- #[message.payload]" doc:name="Logger"/>
+
+ </foreach>
+
+
+
+Get In : #[message.inboundProperties.'http.query.params'.text]
+
+Post in  #[payload.text]
+
+
+
+///
+package org.mule.modules.con;
+
+import org.codehaus.jettison.json.JSONObject;
+import org.mule.api.MuleMessage;
+import org.mule.api.annotations.Config;
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Processor;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
+import org.mule.api.MuleMessage;
+import org.mule.api.annotations.Config;
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Processor;
+import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONObject;
+
+import org.mule.modules.con.config.ConnectorConfig;
+
+
+@Connector(name="con", friendlyName="Con")
+public class ConConnector {
+	final static Logger logger = Logger.getLogger(ConConnector.class);
+    @Config
+    ConnectorConfig config;
+
+    /**
+     * Custom processor
+     *
+     * @param friend Name to be used to generate a greeting message.
+     * @return A greeting message
+     */
+    @Processor
+    public String greet(String friend) {
+        /*
+         * MESSAGE PROCESSOR CODE GOES HERE
+         */
+        return config.getGreeting() + " " + friend + ". " + config.getReply();
+    }
+    
+    @Processor (name="GetFacebookVerify" , friendlyName = "GetFacebookVerify")
+    public String GetFacebookVerify (MuleMessage message, String hub_verify_token,String hub_challenge) {
+    	String token = "1122334455";
+    	
+    	
+    	//hub_verify_token = message.getInboundProperty("hub_verify_token");
+    	//hub_challenge  = message.getInboundProperty("hub.challenge");
+    	if (hub_verify_token.equals(token))
+    	{
+    		message.setOutboundProperty("hub_challenge",hub_challenge);
+    		
+    	}
+    	else {
+    		message.setOutboundProperty("hub_challenge","Eroor Conncet");
+    	}
+    	
+    	return "";  	
+    
+    }    
+    
+    @Processor (name ="ReplyMess" , friendlyName ="ReplyMess" )
+    public void  ReplyMess (MuleMessage message){
+    	
+    	 try {    	  
+    	    String data = message.getPayloadAsString();    	   
+    	    
+    	    JSONObject jsonObj = new JSONObject(data);    	 
+    	 
+		   //logger.info(message.getPayloadAsString());
+		    logger.info(data);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	 
+    	 /*String answerText;
+    	 String [] something = {"I'm sorry, I don't know","Can you tell me any one?","I'm not sure"};
+    	 
+    	 if (text.equals("hi") || text.equals("hello")){
+    		 answerText ="Hello, I'm bot";
+    	 }else if (text.equals("how are you") || text.equals("how are you?")){
+    		 answerText ="i'm fine, thanks";
+    	 }else if (text.equals("what your name") || text.equals("what's your name")){
+    		 answerText ="My name is Bot";
+    	 }
+    	 else {
+    		 int max = something.length;
+    		 int randomNum = ThreadLocalRandom.current().nextInt(0, max );
+    		 answerText = something[randomNum];
+    	 }
+    	 token
+    	 //message.setOutboundProperty("answerText", answerText);
+    	 sendMessageToFB(answerText);
+    	   */
+    }
+
+    public ConnectorConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ConnectorConfig config) {
+        this.config = config;
+    }
+
+}
+
+//
+
+package org.mule.modules.fbcn;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.mule.api.MuleMessage;
+import org.mule.api.annotations.Config;
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Processor;
+import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONObject;
+import org.mule.modules.fbcn.config.ConnectorConfig;
+import org.skyscreamer.jsonassert.JSONParser;
+
+import com.google.gson.JsonArray;
+
+@Connector(name="fbcn", friendlyName="FBCN")
+public class FBCNConnector {
+
+	
+	final static Logger logger = Logger.getLogger(FBCNConnector.class);
+    @Config
+    ConnectorConfig config;
+
+    /**
+     * Custom processor
+     *
+     * @param friend Name to be used to generate a greeting message.
+     * @return A greeting message
+     */
+    @Processor
+    public String greet(String friend) {
+        /*
+         * MESSAGE PROCESSOR CODE GOES HERE
+         */
+        return config.getGreeting() + " " + friend + ". " + config.getReply();
+    }
+    @Processor (name="GetFacebookVerify" , friendlyName = "GetFacebookVerify")
+    public String GetFacebookVerify (MuleMessage message, String hub_verify_token,String hub_challenge) {
+    	String token = "1122334455";
+    	
+    	
+    	//hub_verify_token = message.getInboundProperty("hub_verify_token");
+    	//hub_challenge  = message.getInboundProperty("hub.challenge");
+    	if (hub_verify_token.equals(token))
+    	{
+    		message.setOutboundProperty("hub_challenge",hub_challenge);
+    		
+    	}
+    	else {
+    		message.setOutboundProperty("hub_challenge","Eroor Conncet");
+    	}
+    	
+    	return "";  	
+    
+    }    
+    
+    @Processor (name ="ReplyMess" , friendlyName ="ReplyMess" )
+    public void  ReplyMess (MuleMessage message){
+    	
+    	 try {    	  
+    	  ///  String data = message.getPayloadAsString();    	   
+    	    
+    	  ///  JSONObject jsonObj = new JSONObject(data);    	 
+    	 
+		 logger.info(message.getPayloadAsString());
+		  /// logger.info(data);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	 
+    	 /*String answerText;
+    	 String [] something = {"I'm sorry, I don't know","Can you tell me any one?","I'm not sure"};
+    	 
+    	 if (text.equals("hi") || text.equals("hello")){
+    		 answerText ="Hello, I'm bot";
+    	 }else if (text.equals("how are you") || text.equals("how are you?")){
+    		 answerText ="i'm fine, thanks";
+    	 }else if (text.equals("what your name") || text.equals("what's your name")){
+    		 answerText ="My name is Bot";
+    	 }
+    	 else {
+    		 int max = something.length;
+    		 int randomNum = ThreadLocalRandom.current().nextInt(0, max );
+    		 answerText = something[randomNum];
+    	 }
+    	 token
+    	 //message.setOutboundProperty("answerText", answerText);
+    	 sendMessageToFB(answerText);
+    	   */
+    }
+    
+    public void sendMessageToFB (String answerText)
+    {
+    	/*
+    	String messageData = answerText;
+    	String url = "https://graph.facebook.com/v2.6/me/messages";
+    	String pageToken = "EAABtR6ZCyMxkBALAr6zcZBGw8trrAz3ZBqvD193DWqCWQy9Vw4rwe6PHH7wnrtaHzWF7YOXbOnRIewCmNxHrMNPgGrCGbZCk9hXQ6AZAJOW2ySpVZAEoYriNd8J9yQuroPt2ZBOmYjlqmDNt468wXXENZBNJZCQApmUQ4FTM0pFDDewZDZD";
+    	String JsonData = "{ recipient: {id:"+sender+"},message:"+messageData+",}";
+    	HttpClient httpClient = HttpClientBuilder.create().build();
+
+        HttpPost request = new HttpPost("http://yoururl");
+        try {
+			StringEntity params =new StringEntity (JsonData);
+			request.addHeader("content-type", "application/x-www-form-urlencoded");
+		    request.setEntity(params);
+		    HttpResponse response = (HttpResponse) httpClient.execute(request);
+		    
+		    
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return JsonData;*/
+    	
+    }
+    
+    @Processor (name="WriteStory", friendlyName = "WriteStory")
+    public void WriteStory () {   	
+			
+			 try {
+				 FileOutputStream fos = new FileOutputStream("story.txt");
+				ObjectOutputStream oos = new ObjectOutputStream(fos);
+				Story story[] = {
+					     new Story(1, "hi", "hello")
+					    ,new Story(2, "hello", "hi")
+					    ,new Story(3, "how are you","I'm fine, thanks")
+					    };
+				 oos.writeObject(story);
+
+				   
+				   fos.close();
+				   oos.close();
+			 }		   
+			catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} 
+    @Processor (name="ReadStory", friendlyName = "ReadStory")
+    public void ReadStory () {   
+    	try {
+    		  
+    		    FileInputStream fis = new FileInputStream("story.txt");
+    		    ObjectInputStream ois = new ObjectInputStream(fis);
+    		  
+    		    Story sArr[] = (Story[]) ois.readObject();
+    		    for(Story s : sArr){
+    		      System.out.println(s.toString());
+    		    }
+
+    		   
+    		    fis.close();
+    		    ois.close();
+    		  } catch (Exception ex) {
+    		    System.out.println("Error Reading File:"+ex);
+    		 }
+    }
+
+    public ConnectorConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ConnectorConfig config) {
+        this.config = config;
+    }
+
+}
+
+//
+package org.mule.modules.fbcn;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.mule.api.MuleMessage;
+import org.mule.api.annotations.Config;
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Processor;
+import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONObject;
+import org.mule.modules.fbcn.config.ConnectorConfig;
+import org.skyscreamer.jsonassert.JSONParser;
+
+import com.google.gson.JsonArray;
+
+@Connector(name="fbcn", friendlyName="FBCN")
+public class FBCNConnector {
+
+	
+	final static Logger logger = Logger.getLogger(FBCNConnector.class);
+    @Config
+    ConnectorConfig config;
+
+    /**
+     * Custom processor
+     *
+     * @param friend Name to be used to generate a greeting message.
+     * @return A greeting message
+     */
+    @Processor
+    public String greet(String friend) {
+        /*
+         * MESSAGE PROCESSOR CODE GOES HERE
+         */
+        return config.getGreeting() + " " + friend + ". " + config.getReply();
+    }
+    @Processor (name="GetFacebookVerify" , friendlyName = "GetFacebookVerify")
+    public String GetFacebookVerify (MuleMessage message, String hub_verify_token,String hub_challenge) {
+    	String token = "1122334455";
+    	
+    	
+    	//hub_verify_token = message.getInboundProperty("hub_verify_token");
+    	//hub_challenge  = message.getInboundProperty("hub.challenge");
+    	if (hub_verify_token.equals(token))
+    	{
+    		message.setOutboundProperty("hub_challenge",hub_challenge);
+    		
+    	}
+    	else {
+    		message.setOutboundProperty("hub_challenge","Eroor Conncet");
+    	}
+    	
+    	return "";  	
+    
+    }    
+    
+    @Processor (name ="ReplyMess" , friendlyName ="ReplyMess" )
+    public void  ReplyMess (MuleMessage message){
+    	
+    	 try {    	  
+    	  ///  String data = message.getPayloadAsString();    	   
+    	    
+    	  ///  JSONObject jsonObj = new JSONObject(data);    	 
+    	 
+		 logger.info(message.getPayloadAsString());
+		  /// logger.info(data);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	 
+    	 /*String answerText;
+    	 String [] something = {"I'm sorry, I don't know","Can you tell me any one?","I'm not sure"};
+    	 
+    	 if (text.equals("hi") || text.equals("hello")){
+    		 answerText ="Hello, I'm bot";
+    	 }else if (text.equals("how are you") || text.equals("how are you?")){
+    		 answerText ="i'm fine, thanks";
+    	 }else if (text.equals("what your name") || text.equals("what's your name")){
+    		 answerText ="My name is Bot";
+    	 }
+    	 else {
+    		 int max = something.length;
+    		 int randomNum = ThreadLocalRandom.current().nextInt(0, max );
+    		 answerText = something[randomNum];
+    	 }
+    	 token
+    	 //message.setOutboundProperty("answerText", answerText);
+    	 sendMessageToFB(answerText);
+    	   */
+    }
+    
+    public void sendMessageToFB (String answerText)
+    {
+    	/*
+    	String messageData = answerText;
+    	String url = "https://graph.facebook.com/v2.6/me/messages";
+    	String pageToken = "EAABtR6ZCyMxkBALAr6zcZBGw8trrAz3ZBqvD193DWqCWQy9Vw4rwe6PHH7wnrtaHzWF7YOXbOnRIewCmNxHrMNPgGrCGbZCk9hXQ6AZAJOW2ySpVZAEoYriNd8J9yQuroPt2ZBOmYjlqmDNt468wXXENZBNJZCQApmUQ4FTM0pFDDewZDZD";
+    	String JsonData = "{ recipient: {id:"+sender+"},message:"+messageData+",}";
+    	HttpClient httpClient = HttpClientBuilder.create().build();
+
+        HttpPost request = new HttpPost("http://yoururl");
+        try {
+			StringEntity params =new StringEntity (JsonData);
+			request.addHeader("content-type", "application/x-www-form-urlencoded");
+		    request.setEntity(params);
+		    HttpResponse response = (HttpResponse) httpClient.execute(request);
+		    
+		    
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return JsonData;*/
+    	
+    }
+    
+    @Processor (name="WriteStory", friendlyName = "WriteStory")
+    public void WriteStory () {   	
+			
+			 try {
+				 FileOutputStream fos = new FileOutputStream("story.txt");
+				ObjectOutputStream oos = new ObjectOutputStream(fos);
+				Story story[] = {
+					     new Story(1, "hi", "hello")
+					    ,new Story(2, "hello", "hi")
+					    ,new Story(3, "how are you","I'm fine, thanks")
+					    };
+				 oos.writeObject(story);
+
+				   
+				   fos.close();
+				   oos.close();
+			 }		   
+			catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} 
+    @Processor (name="ReadStory", friendlyName = "ReadStory")
+    public void ReadStory () {   
+    	try {
+    		  
+    		    FileInputStream fis = new FileInputStream("story.txt");
+    		    ObjectInputStream ois = new ObjectInputStream(fis);
+    		  
+    		    Story sArr[] = (Story[]) ois.readObject();
+    		    for(Story s : sArr){
+    		      System.out.println(s.toString());
+    		    }
+
+    		   
+    		    fis.close();
+    		    ois.close();
+    		  } catch (Exception ex) {
+    		    System.out.println("Error Reading File:"+ex);
+    		 }
+    }
+
+    public ConnectorConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ConnectorConfig config) {
+        this.config = config;
+    }
+
+}
+
+//
+
+package org.mule.modules.chatbot;
+
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.mule.api.MuleMessage;
+import org.mule.api.annotations.Config;
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Processor;
+
+import org.mule.modules.chatbot.config.ConnectorConfig;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+@Connector(name="chatbot", friendlyName="Chatbot")
+public class ChatbotConnector {
+	
+	final static Logger logger = Logger.getLogger(ChatbotConnector.class);
+
+    @Config
+    ConnectorConfig config;
+
+    /**
+     * Custom processor
+     *
+     * @param friend Name to be used to generate a greeting message.
+     * @return A greeting message
+     */
+    @Processor
+    public String greet(String friend) {
+        /*
+         * MESSAGE PROCESSOR CODE GOES HERE
+         */
+        return config.getGreeting() + " " + friend + ". " + config.getReply();
+    }
+    @Processor (name ="ReplyMessage", friendlyName = "ReplyMessage")
+     public void ReplyMessage (MuleMessage message) {
+    	     try {
+				logger.info(message.getPayloadAsString());
+				String data = message.getPayloadAsString();
+				JSONObject obj = new JSONObject(data);
+				JSONArray a = obj.getJSONArray("entry");
+				logger.info(a);
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	     
+    }
+    public ConnectorConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ConnectorConfig config) {
+        this.config = config;
+    }
+
+}
+
+
+//.
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.mule.api.MuleMessage;
+import org.mule.api.annotations.Config;
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Processor;
+
+   final static Logger logger = Logger.getLogger(ChatpageConnector.class);
+
+  @Processor (name ="ReplyMessage", friendlyName = "ReplyMessage")
+    public void ReplyMessage (MuleMessage message) {
+   	     try {
+				
+				String data = message.getPayloadAsString();
+				JSONObject obj = new JSONObject(data);
+				JSONArray a = obj.getJSONArray("entry");
+				JSONObject j = a.getJSONObject(0);
+				JSONArray messing = j.getJSONArray("messaging");
+				JSONObject sender = messing.getJSONObject(0);
+				String se = sender.getString("sender");
+				JSONObject ss = new JSONObject(se);
+				String id = ss.getString("id");
+				
+				//JSONObject id = sender.getJSONObject("id");
+				logger.info(id);
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+   	     
+   }
+
+
+"object":"page","entry":[{"id":"1935881290069868","time":1507292012811,"messaging":[{"sender":{"id":"1865447776806699"},"recipient":{"id":"1935881290069868"},"timestamp":1507292012808,"delivery":{"mids":["mid.$cAAbgrGFXI9dlIuAnZVe8ZrUwpI4b"],"watermark":1507292012389,"seq":0}}]}]}
+
+1935881290069868
+
+
+ @Processor (name ="ReplyMessage", friendlyName = "ReplyMessage")
+    public void ReplyMessage (MuleMessage message) {
+   	     try {
+				
+				String data = message.getPayloadAsString();
+				JSONObject obj = new JSONObject(data);
+				JSONArray a = obj.getJSONArray("entry");
+				JSONObject j = a.getJSONObject(0);
+				JSONArray messing = j.getJSONArray("messaging");
+				JSONObject sender = messing.getJSONObject(0);
+				JSONObject kk = sender.getJSONObject("sender");
+				String id = kk.getString("id");
+				logger.info(message.getPayloadAsString());
+				
+				//JSONObject ss = new JSONObject(se);
+				//String id = ss.getString("id");
+				
+				//JSONObject id = sender.getJSONObject("id");
+				logger.info(id);
+				
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    }
+
+
+
