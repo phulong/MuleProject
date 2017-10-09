@@ -1,0 +1,99 @@
+package org.mule.modules.connectorf;
+
+import org.apache.log4j.Logger;
+import org.mule.api.MuleMessage;
+import org.mule.api.annotations.Config;
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Processor;
+
+import org.mule.modules.connectorf.config.ConnectorConfig;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+@Connector(name="connector-f", friendlyName="ConnectorF")
+public class ConnectorFConnector {
+	public static Logger logger = Logger.getLogger(ConnectorFConnector.class);
+    @Config
+    ConnectorConfig config;
+
+    /**
+     * Custom processor
+     *
+     * @param friend Name to be used to generate a greeting message.
+     * @return A greeting message
+     */
+    @Processor
+    public String greet(String friend) {
+        /*
+         * MESSAGE PROCESSOR CODE GOES HERE
+         */
+        return config.getGreeting() + " " + friend + ". " + config.getReply();
+    }
+    @Processor (name ="GetView", friendlyName = "GetView")
+    public void GetView (MuleMessage message) {
+    	selectAll();
+    	logger.info(message);
+    	
+    }
+    
+    private Connection connect() {
+        // SQLite connection string
+    	try {
+			Class.forName("org.sqlite.JDBC");
+		} catch (ClassNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        String url = "jdbc:sqlite:D://data.db";
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(url);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return conn;
+    }
+    
+    public void selectAll(){
+        String sql = "SELECT * FROM chat";
+        
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            
+            // loop through the result set
+            while (rs.next()) {
+                System.out.println(rs.getInt("id") +  "\t" + 
+                                   rs.getString("user_chat") + "\t" +
+                                   rs.getString("bot_chat"));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    public void insert(String user_chat, String bot_chat) {
+        String sql = "INSERT INTO chat(user_chat,bot_chat) VALUES('user_chat','bot_chat')";
+ 
+        try (Connection conn = this.connect();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, user_chat);
+            pstmt.setString(2, bot_chat);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    public ConnectorConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ConnectorConfig config) {
+        this.config = config;
+    }
+
+}
