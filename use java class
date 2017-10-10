@@ -1,0 +1,10 @@
+ <spring:beans>
+		<spring:bean class="testsqlite.SQLiteJDBCDriverConnection"
+		name="SQLiteJDBCDriverConnection">
+		</spring:bean>    
+    </spring:beans>
+    <flow name="testsqliteFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/" doc:name="HTTP"/>
+        <component class="testsqlite.SQLiteJDBCDriverConnection" doc:name="Java"/>
+         <invoke object-ref="SQLiteJDBCDriverConnection" method="selectAll" doc:name="Invoke"/>
+    </flow>
