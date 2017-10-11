@@ -1,0 +1,76 @@
+package testsqlite;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+public class SQLiteJDBCDriverConnection {
+	  /**
+     * Connect to a sample database
+	 * @throws ClassNotFoundException 
+     */
+	 private Connection connect() throws ClassNotFoundException {
+	        // SQLite connection string
+			Class.forName("org.sqlite.JDBC");
+            String url = "jdbc:sqlite:home/data.db";
+	        Connection conn = null;
+	        try {
+	            conn = DriverManager.getConnection(url);
+	        } catch (SQLException e) {
+	            System.out.println(e.getMessage());
+	        }
+	        return conn;
+	    }
+	 
+	public void selectAll() throws ClassNotFoundException{
+		
+		String text = "how are you";
+		String sql = "SELECT * FROM chat where user_chat ='"+text+"'";
+        
+        try (Connection conn = this.connect();
+             Statement stmt  = conn.createStatement();
+             ResultSet rs    = stmt.executeQuery(sql)){
+            
+            // loop through the result set
+            while (rs.next()) {
+                System.out.println("Bot chat:"+  rs.getString("bot_chat"));
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+	
+	
+	
+	
+    
+  /*  public static void connect() throws ClassNotFoundException {
+        Connection conn = null;
+        try {
+            // db parameters
+        	Class.forName("org.sqlite.JDBC");
+            String url = "jdbc:sqlite:data.db";
+            // create a connection to the database
+            conn = DriverManager.getConnection(url);
+            
+            System.out.println("Connection to SQLite has been established.");
+            
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                System.out.println(ex.getMessage());
+            }
+        } 
+        
+       
+    }*/
+   
+}
+
