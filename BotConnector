@@ -1,0 +1,184 @@
+package org.mule.modules.bot;
+
+import org.mule.api.annotations.Config;
+
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Processor;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Random;
+
+import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.mule.api.MuleMessage;
+import org.mule.api.annotations.Config;
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Processor;
+import org.mule.modules.bot.config.ConnectorConfig;
+
+@Connector(name="bot", friendlyName="Bot")
+public class BotConnector {
+	 final static Logger logger = Logger.getLogger(BotConnector.class);
+
+    @Config
+    ConnectorConfig config;
+
+    /**
+     * Custom processor
+     *
+     * @param friend Name to be used to generate a greeting message.
+     * @return A greeting message
+     */
+    @Processor
+    public String greet(String friend) {
+        /*
+         * MESSAGE PROCESSOR CODE GOES HERE
+         */
+        return config.getGreeting() + " " + friend + ". " + config.getReply();
+    }
+    @Processor (name="GetFacebookVerify" , friendlyName = "GetFacebookVerify")
+    public String GetFacebookVerify (MuleMessage message, String hub_verify_token,String hub_challenge) {
+    	String token = "1122334455";
+    	
+    	
+    	//hub_verify_token = message.getInboundProperty("hub_verify_token");
+    	//hub_challenge  = message.getInboundProperty("hub.challenge");
+    	if (hub_verify_token.equals(token))
+    	{
+    		message.setOutboundProperty("hub_challenge",hub_challenge);
+    		
+    	}
+    	else {
+    		message.setOutboundProperty("hub_challenge","Eroor Conncet");
+    	}
+    	
+    	return "";  	
+    
+    }    
+ 
+    @Processor (name ="ReplyMessage", friendlyName = "ReplyMessage")
+    public void ReplyMessage (MuleMessage message,String access_token) {
+   	     try {
+				
+				String data = message.getPayloadAsString();
+				JSONObject obj = new JSONObject(data);
+				JSONArray a = obj.getJSONArray("entry");
+				JSONObject j = a.getJSONObject(0);
+				JSONArray messing = j.getJSONArray("messaging");
+				JSONObject sender = messing.getJSONObject(0);
+				JSONObject kk = sender.getJSONObject("sender");
+				JSONObject mesage = sender.getJSONObject("message");
+				String text = mesage.getString("text");
+				
+				String id = kk.getString("id");
+				//logger.info(message.getPayloadAsString());
+				
+				
+				logger.info("ID sender: "+id);
+				logger.info("Text sender: "+text);
+				//String token = "EAABtR6ZCyMxkBAOufD7sdK8aL1ZBfZClft6ZAhZBxHxhNjRMH7ffi5AkROP5wNM6nVh2pbft3G9HQ4ZAqeeXUjJxWiAO8L75ZAux8FrhFWLYVpQd1knCeqLecvZBDYpfTR9PZAceVtEKsqth2HHGWYKiBuiRK8wlV8I3QzL99Hx3cEgZDZD"; 
+		    	String query = "https://graph.facebook.com/v2.6/me/messages?access_token="+access_token;
+		       // String json = "{\"recipient\":{\"id\":"+id+"},\"message\": {\"text\":\""+text+"\"}}";
+		    	String textAns = AnswerText (text);
+		    	String json = "{\"recipient\":{\"id\":"+id+"},\"message\": {\"text\":\""+textAns+"\"}}";
+		       
+		        //logger.info(query);
+		        logger.info(json);
+		        
+				try {
+				SendMessage(id, text, access_token);
+				}
+				catch (Exception e) {
+					System.out.print(e.toString());
+				}
+				
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    }
+   	      
+   
+    private JSONObject SendMessage(String id , String text,String access_token) throws IOException, JSONException {
+        String token = "EAABtR6ZCyMxkBAOufD7sdK8aL1ZBfZClft6ZAhZBxHxhNjRMH7ffi5AkROP5wNM6nVh2pbft3G9HQ4ZAqeeXUjJxWiAO8L75ZAux8FrhFWLYVpQd1knCeqLecvZBDYpfTR9PZAceVtEKsqth2HHGWYKiBuiRK8wlV8I3QzL99Hx3cEgZDZD"; 
+    	String query = "https://graph.facebook.com/v2.6/me/messages?access_token="+access_token;
+    	String textAns = AnswerText (text);
+        String json = "{\"recipient\":{\"id\":"+id+"},\"message\": {\"text\":\""+textAns+"\"}}";
+       // String json = "{\"recipient\":{\"id\":\"1935881290069868\"},\"message\": {\"text\":\"hiii\"}}";
+       /// String 	 query ="http://tuoitre.vn";
+
+        URL url = new URL(query);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setConnectTimeout(5000);
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setDoOutput(true);
+        conn.setDoInput(true);
+        conn.setRequestMethod("POST");
+
+        OutputStream os = conn.getOutputStream();
+        os.write(json.getBytes("UTF-8"));
+        os.close();
+
+        // read the response
+        InputStream in = new BufferedInputStream(conn.getInputStream());
+        String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
+        JSONObject jsonObject = new JSONObject(result);
+
+        in.close();
+        conn.disconnect(); 
+        return jsonObject;
+}
+    
+    
+    
+    // Get Text answers
+    public String AnswerText (String input){
+    	String output = "";
+    	if (input.equals("hi")||input.equals("hello")||input.equals("Hello")||input.equals("Hi"))
+    	{
+    		output ="hello, I'm chat bot.I was created for study in university. I will talk about some things with you.";
+    	}else if (input.equals("what your name")||input.equals("what's your name")||input.equals("what is your name")||input.equals("What your name")||input.equals("What's your name")||input.equals("What is your name")){
+    		output = "My name's ChatBot. I was created for study in university ";
+    	}
+    	else if (input.equals("how are you")||input.equals("How are you")||input.equals("how are you?")||input.equals("How are you?")){
+    		output = "I'm fine. Thank you.";
+    	}    	
+    	else if (input.equals("how old are you")||input.equals("How old are you")||input.equals("How old are you?")){
+    		output = "I'm 20 years old. And you?";
+    	}
+    	else if (input.equals("how are you today")||input.equals("How are you today")||input.equals("How are you today?")){
+    		output = "Really good! ";
+    	}else if (input.equals("can you give me a hand?")||input.equals("Can you give me a hand")){
+    		output = "Sure, just a second ";
+    	}else if (input.equals("help")||input.equals("can you help me")||input.equals("Can you help me")||input.equals("help me")||input.equals("Help")){
+    		output = "Sure, just a second. Welcome to my BotPage.  I will talk about with you.   ";
+    	}
+    	else {
+    		
+    		String[] asArray = {"Hey, Welcome to my chat bot page. My purpose is to chat with people. Please approve for me. Thank you very much.","Of course! But I am in the process of building. Please approve for me. Thank you very much.","Hey, Welcome to my chat bot page. My purpose is to chat with people. Please approve for me. Thank you very much."}; 
+    		Random rand = new Random();
+    		int randomNum, minimum = 0, maximum =asArray.length;
+    		randomNum = minimum + rand.nextInt((maximum - minimum));
+    		output = asArray[randomNum];
+    	}    	
+    	return output;
+    }
+    	 
+    
+    public ConnectorConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ConnectorConfig config) {
+        this.config = config;
+    }
+
+}
