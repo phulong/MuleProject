@@ -1,0 +1,99 @@
+package database;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+import org.mule.api.MuleMessage;
+
+import modal.ChatBot;
+import modal.Sender;
+public class ChatBotDatabase {
+	 
+	 private Connection connect() throws ClassNotFoundException {
+	        // SQLite connection string
+	     Class.forName("org.sqlite.JDBC");
+         String url = "jdbc:sqlite:D://data.db";
+	        Connection conn = null;
+	        try {
+	            conn = DriverManager.getConnection(url);
+	        } catch (SQLException e) {
+	            System.out.println(e.getMessage());
+	        }
+	        return conn;
+	    }
+	 
+	 public int insert(ChatBot chatbot) {
+		    int cnt = 0;
+	        String sql = "INSERT INTO chat  VALUES("+null+",'"+chatbot.GetUserChat()+"','"+chatbot.GetBotChat()+"')";
+	        try (Connection conn = this.connect();
+	                Statement stmt  = conn.createStatement();
+	                ResultSet rs    = stmt.executeQuery(sql)){
+	                cnt++;
+	                 
+	           } catch (SQLException | ClassNotFoundException e) {
+	               System.out.println(e.getMessage());
+	           }	
+	        return cnt	;
+	    }
+	 public ArrayList<ChatBot>  select( ) {
+		    ArrayList<ChatBot> list =  new ArrayList<ChatBot>(); 
+	        String sql = "select * from chat";
+	        try (Connection conn = this.connect();
+	                Statement stmt  = conn.createStatement();
+	                ResultSet rs    = stmt.executeQuery(sql)){	               
+	        	    ChatBot cb = null;
+	               // loop through the result set
+	               while (rs.next()) {
+	            	   
+	            	   cb = new ChatBot(rs.getInt("id"), rs.getString("user_chat"),rs.getString("bot_chat"));
+	            	   
+	            	   list.add(cb);
+	               }
+	           } catch (SQLException | ClassNotFoundException e) {
+	               System.out.println(e.getMessage());
+	           }
+	        return list;
+	     
+	    }
+	 
+	 public ChatBot reply(String text) throws ClassNotFoundException{			
+		  
+		    ChatBot chatbot = null;
+			String sql = "SELECT * FROM chat where user_chat ='"+text+"'";			
+	        
+	        try (Connection conn = this.connect();
+	             Statement stmt  = conn.createStatement();
+	             ResultSet rs    = stmt.executeQuery(sql)){
+	             
+	            // loop through the result set
+	            while (rs.next()) {
+	            	chatbot =  new ChatBot (rs.getInt("id"),rs.getString("user_chat"),rs.getString("bot_chat"));
+	             }
+	        } catch (SQLException e) {
+	            System.out.println(e.getMessage());
+	        }
+	        return chatbot;
+	    }
+	 
+	 public void delete() {
+	        String sql = "DELETE FROM chat WHERE id =14";
+	 
+	        try (Connection conn = this.connect();
+	                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+	 
+	           
+	            // execute the delete statement
+	            pstmt.executeUpdate();
+	 
+	        } catch (SQLException | ClassNotFoundException e) {
+	            System.out.println(e.getMessage());
+	        }
+	    }
+	 
+	
+	 
+}
