@@ -22,33 +22,35 @@
         <th>Bot Chat</th>
       </tr>
     </thead>
-    <tbody id ="data" >  
+    <tbody id ="result" >  
      
      
     </tbody>
   </table>
-   <div id="result"> </div>
+   <div id="s"> </div>
 </div>
 
 
  <script>   
                 var obj = null;
                 $.post( "https://chatbot.asiantechhub.com:8018/chatbot/getall", function( data ) {
-  		 obj = JSON.parse(data);
+			obj = JSON.parse(data);
+			for (var i = 0 ; i < obj.length ; i++) {
+                                 var user_chat = obj[i].user_chat;
+				 var bot_chat = obj[i].bot_chat;
+				 var id = obj[i].id;
+ 	 $("#result").append("<tr><td>"+id+"</td><td>"+user_chat+"</td><td>"+bot_chat+"</td></tr>");
+			}                       
+			
+  		 	
                   		 
                  
 		});
-                for (i = 0; i < obj.length; i++) { 
-   		   // var id = obj[i].id + "<br>";
-                   // alert (id);
-                          alert (i);
-				alert (obj);
-
-		}
+                
 		
      </script>
 
 
-</script>
+
 </body>
 </html>
