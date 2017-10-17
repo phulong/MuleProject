@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:bot-chat="http://www.mulesoft.org/schema/mule/bot-chat" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/bot-chat http://www.mulesoft.org/schema/mule/bot-chat/current/mule-bot-chat.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" protocol="HTTPS" host="0.0.0.0" port="8018" basePath="chatbot" doc:name="HTTP Listener Configuration">
+        <tls:context>
+            <tls:key-store type="jks" path="keystore.jks" alias="chatbot" keyPassword="123456" password="123456"/>
+        </tls:context>
+    </http:listener-config>
+     <spring:beans>
+		<spring:bean class="service.ChatBotService"
+		name="ChatBotService">
+		</spring:bean>    
+    </spring:beans>
+    <bot-chat:config name="BotChat__Configuration" doc:name="BotChat: Configuration"/>
+    <flow name="hubverify">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/" doc:name="HTTP"/>
+        <bot-chat:get-facebook-verify config-ref="BotChat__Configuration" hub_challenge="#[message.inboundProperties.'http.query.params'.get('hub.challenge')]" hub_verify_token="#[message.inboundProperties.'http.query.params'.get('hub.verify_token')]" doc:name="BotChat"/>
+        <set-payload value="#[message.inboundProperties.'http.query.params'.get('hub.challenge')]" doc:name="Set Payload"/>
+    </flow>
+    <flow name="ReplyMessages">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/webhook" doc:name="HTTP" allowedMethods="POST"/>
+        <invoke object-ref="ChatBotService" method="ReplyMessage" doc:name="Invoke" methodArguments="#[payload]"/>
+    </flow>
+    <flow name="Manager">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/manager" doc:name="HTTP"/>
+        <parse-template location="html/manager.html" doc:name="Parse Template"/>
+    </flow>
+    <flow name="PostInsert">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/insertvalue" doc:name="HTTP"/>
+        <invoke object-ref="ChatBotService" method="insertChatBot" methodArguments="#[payload.user_chat],#[payload.bot_chat]" doc:name="Invoke"/>
+    </flow>
+    <flow name="pagechatbotFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/select" doc:name="HTTP"/>
+        <parse-template location="html/view.html" doc:name="Parse Template"/>
+    </flow>
+    <flow name="GetAll">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/getall" doc:name="HTTP"/>
+        <invoke object-ref="ChatBotService" method="selectAll" doc:name="Invoke"/>
+    </flow>
+    <flow name="pagechatbotFlow1">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/delete" doc:name="HTTP"/>
+        <invoke object-ref="ChatBotService" method="Delete" methodArguments="#[payload.id]" doc:name="Invoke"/>
+    </flow>
+    <flow name="pagechatbotFlow2">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/selectwhere" allowedMethods="POST" doc:name="HTTP"/>
+        <invoke object-ref="ChatBotService" method="selectWhere" methodArguments="#[payload.id]" doc:name="Invoke"/>
+    </flow>
+    <flow name="pagechatbotFlow3">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/update" doc:name="HTTP"/>
+        <invoke object-ref="ChatBotService" method="Update" methodArguments="#[payload.id],#[payload.user_chat],#[payload.bot_chat]" doc:name="Invoke"/>
+    </flow>
+</mule>

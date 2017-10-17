@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <title>ChatBot facebook manager</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+      <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script> 	
+      <style>
+         .vertical-menu {
+         width: 200px;
+         }
+         .vertical-menu a {
+         background-color: #eee;
+         color: black;
+         display: block;
+         padding: 12px;
+         text-decoration: none;
+         }
+         .vertical-menu a:hover {
+         background-color: #ccc;
+         }
+         .vertical-menu a.active {
+         background-color: #4CAF50;
+         color: white;
+         }
+      </style>
+   </head>
+   <body>
+      <div style= " text-align: center;
+         height: 90px;
+         background-color: azure;
+         color: crimson;
+         font-size: 35px;
+         padding-top: 15px;
+         margin-bottom: 20px;"class="header"> Manager Chat Bot Facebook Page </div>
+      <div class="container">
+         <div class="row">
+            <div class="col-md-3">
+               <div class="vertical-menu">
+                  <a href="#" class="active">Home</a>
+                  <a href="#">Bot 1</a>
+                  <a href="#">Bot 2</a>
+                  <a href="#">Bot 3</a>
+                  <a href="#">Bot 4</a>
+               </div>
+            </div>
+            <div class="col-md-9">
+               <h2>Story of User and Bot </h2>
+               <table class="table table-hover" id="myTable">
+                  <thead>
+                     <tr>
+                        <form accept-charset="utf-8">
+                           <td><span <span style="margin-right: 10px;"><strong>Input user text</strong></span> <input type="text" name="user_chat" id="user_chat" value="" placeholder="User chat text"> </td>
+                           <td><span style="margin-right: 10px;"><strong>Input bot text</strong></span><input type="text" name="bot_chat" id="bot_chat" value="" placeholder="Bot chat text"> </td>
+                           <td><button type="button" class="btn-success btnInsert">Insert</button>   </td>
+                        </form>
+                     </tr>
+                     <tr>
+                        <th>Number</th>
+                        <th>User Chat</th>
+                        <th>Bot Chat</th>
+                        <th></th>
+                        <th></th>
+                     </tr>
+                  </thead>
+                  <tbody id ="result" >       
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+      <!-- Trigger the modal with a button -->
+      <!-- Modal -->
+      <div class="modal fade" id="myModal" role="dialog">
+      <div class="modal-dialog">
+         <!-- Modal content-->
+         modal +="
+         <div class='modal-content' id="modal_edit">;
+         </div>
+      </div>
+
+<script>   
+
+$( document ).ready(function() {
+         
+    var obj = null;
+           $.post( "https://chatbot.asiantechhub.com:8018/chatbot/getall", function( data ) {
+		obj = JSON.parse(data);
+		for (var i = 0 ; i < obj.length ; i++) {
+                              var user_chat = obj[i].user_chat;
+		              var bot_chat = obj[i].bot_chat;
+			      var id = obj[i].id;
+                              var stt = i+1;
+                 var value = "<tr><td>"+stt+"</td><td>"+user_chat+"</td><td>"+bot_chat+"</td>";
+    value += " <td> <button type='button' class='btn-info btnEdit' id='"+id+"' data-toggle='modal' data-target='#myModal'><span class='glyphicon glyphicon-edit'></span></button></td>";
+    value += "<td><button type='button' id='"+ id +"' class='btn-danger btnDelete'> <span class='glyphicon glyphicon-trash'></span></button></td></tr>"
+ 		 $("#result").append(value);
+	 }                   
+	 	                           
+		});
+
+
+
+      // Delete chat
+      $(document).on ("click", ".btn-danger.btnDelete", function () {
+                   var r = confirm("Do you want delete?");
+                   if (r == true) {
+  			  var id = this.getAttribute('id');
+                 
+                      $.post("https://chatbot.asiantechhub.com:8018/chatbot/delete",
+   			 {
+     			   id: id
+        
+    			},
+   		 function(data){
+                        
+      			  alert(data);
+			window.location.href = "https://chatbot.asiantechhub.com:8018/chatbot/manager";
+			 
+   		 });
+		} else {
+   		 var txt = "You pressed Cancel!";
+		
+		}         
+         
+     
+       
+	});
+
+      // insert chat
+	 $(document).on ("click", ".btn-success.btnInsert", function () {                  
+                  
+			
+			  var user_chat = $("#user_chat").val();
+			  var bot_chat = $("#bot_chat").val();
+  			 // var id = this.getAttribute('id');
+                      
+                 
+                      $.post("https://chatbot.asiantechhub.com:8018/chatbot/insertvalue",
+   			 {
+     			   user_chat: user_chat,
+			   bot_chat : bot_chat
+        
+    			},
+   		 function(data){
+                        
+      			  alert(data);
+			  window.location.href = "https://chatbot.asiantechhub.com:8018/chatbot/manager";
+			 
+   		 });
+		
+         
+     
+       
+	});
+   
+
+// Edit
+     $(document).on ("click", ".btn-info.btnEdit", function () {
+
+                        var id =this.getAttribute('id');
+			var user_chat =null;
+			var bot_chat =null;	
+                 
+                      $.post("https://chatbot.asiantechhub.com:8018/chatbot/selectwhere",
+   			 {
+     			   id: id			   
+         	},
+   		 function(data){
+                       
+			obj = JSON.parse(data);
+		
+                               user_chat = obj.user_chat;
+		               bot_chat = obj.bot_chat;
+			     
+                            $("#test").html(id +user_chat + bot_chat);
+// Xu ly edit
+	
+        var modal ="";   
+  
+       modal+="<div class='modal-header'>";
+         modal+="  <button type='button' class='close' data-dismiss='modal'>&times;</button>";
+        modal+="   <h4 class='modal-title'>Edit chat</h4>";
+        modal+=" </div>";
+       modal+="  <div class='modal-body'>";
+	 modal+="    <label>User chat</label>	";
+ modal+="<input type='hidden' class='form-control' id='chat_id' value='"+id+"'>";
+      modal+="       <input type='text' class='form-control' id='edtUser_chat' value='"+ user_chat+"'>";
+	 modal+="    <label>Bot chat</label>	";
+       modal+="      <input type='text' class='form-control' id='edtBot_chat' value='"+bot_chat+"'>";
+      modal+="   </div>";
+      modal+="   <div class='modal-footer'>";
+      modal+="    <button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>";
+      
+  modal+="    <button type='button' class='btn btn-success' id='btnSave'  data-dismiss='modal'>Save</button>";
+       modal+="  </div>";
+      modal+=" </div>";
+
+	$("#modal_edit").html(modal);
+
+
+
+      			 
+			 
+   		 });
+		
+     
+         
+    });
+
+	
+       
+
+ // post edit chat
+	 $(document).on ("click", "#btnSave", function () {                  
+                  
+		var id =$("#chat_id").val();
+		var user_chat = $("#edtUser_chat").val();
+		var bot_chat = $("#edtBot_chat").val();			
+		
+         
+              $.post("https://chatbot.asiantechhub.com:8018/chatbot/update",
+   			 { 
+			   id:id,
+     			   user_chat: user_chat,
+			   bot_chat : bot_chat
+        
+    			},
+   		 function(data){
+                        
+      			  alert(data);
+			  window.location.href = "https://chatbot.asiantechhub.com:8018/chatbot/manager";
+			 
+   		 });
+
+
+
+
+
+
+       
+	});
+   
+
+//End Document Ready
+});
+
+/*
+$(document).ready(function(){
+    $('#myTable').DataTable();
+});
+*/
+	
+     </script>
+</body>
+</html>
